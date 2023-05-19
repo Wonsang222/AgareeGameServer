@@ -21,8 +21,14 @@ sequelize.sync({force:false})
   console.log(err);
 })
 
-app.use('/',indexRouter);
-app.use('/guessWho',guessWhoRouter);
+// 버전, 아이폰, 
+app.use()
+
+app.get('./guessWho/:howmany', (req, res) => {
+  let {howmany} = req.params;
+  // 여기서 짜르기
+
+})
 
 app.use((req, res, next) => {
   const error = new Error('라우터가 없습니다.');
