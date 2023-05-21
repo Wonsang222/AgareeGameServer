@@ -2,13 +2,14 @@ const express = require('express');
 const dotenv = require('dotenv');
 dotenv.config();
 const path = require('path');
+const fs = require('fs');
 const morgan = require('morgan');
 // 배포할때는 combined
 const cookieParser = require('cookie-parser');
 const indexRouter = require('./routes/index');
 const guessWhoRouter = require('./routes/guessWho');
 const {sequelize} = require('./models');
-const fs = require('fs');
+
 
 const app = express();
 app.set('port', process.env.PORT || 8001);
@@ -29,18 +30,17 @@ sequelize.sync({force:false})
 
 // 버전, 아이폰, 
 app.use((req, res, next) =>{
-  console.log('일단 미들웨어 진입');
   const userAgent = req.header('User-Agent');
   const uuid = req.header('Authorization');
-  console.log('uuid' + uuid);
-  console.log('useragent' + userAgent);
 
   if (userAgent == process.env.BUNDLE && uuid == process.env.UUID){
-    console.log('여기타니');
     next('route');
+
+    // const err = new Error('test');
+    // err.status = 404;
+    
   } else{
     const err = new Error('잘못된 접근입니다.');
-    console.log('여기타니2');
     err.status = 404;
     next(err);
   }
