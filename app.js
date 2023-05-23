@@ -50,6 +50,27 @@ app.get('/guessWho', (req, res, next) => {
   console.log('guessWhoGET')
   res.status = 200;
   res.json(guessWhoDB);
+
+  readFileAsync('./tempDB/CharDB.json')
+  .then(resolve => {
+    const a = JSON.parse(resolve);
+    console.log(a['장원영']);
+  })
+  
+
+  function readFileAsync(filePath){
+    return new Promise((resolve, reject) => {
+      fs.readFile(filePath, (err, data) => {
+        if (err){
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      });
+    });
+  }
+
+
 })
 
 app.use((req, res, next) => {
