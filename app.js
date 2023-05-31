@@ -49,14 +49,16 @@ app.use((req, res, next) =>{
 app.get('/guessWho', (req, res, next) => {
   console.log('guessWhoGET')
   res.status = 200;
-  res.json(guessWhoDB);
+  const randomObject = {};
+  const keys = Object.keys(guessWhoDB);
 
-  readFileAsync('./tempDB/CharDB.json')
-  .then(resolve => {
-    const a = JSON.parse(resolve);
-    console.log(a['장원영']);
-  })
-  
+  for (let i = 0; i < count; i++){
+    const randomKey = keys[Math.floor(Math.random() * keys.length)];
+    randomObject[randomKey] = guessWhoDB[randomKey]
+  }
+
+  res.json(randomObject);
+
 
   function readFileAsync(filePath){
     return new Promise((resolve, reject) => {

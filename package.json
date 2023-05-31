@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon app",
     "crawl": "node crawling.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node testing.js"
   },
   "author": "",
   "license": "MIT",
