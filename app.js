@@ -51,13 +51,30 @@ app.get('/guessWho', (req, res, next) => {
   res.status = 200;
   const randomObject = {};
   const keys = Object.keys(guessWhoDB);
+  const query = req.query;
+  // log 찍어보고 결정
 
-  for (let i = 0; i < count; i++){
-    const randomKey = keys[Math.floor(Math.random() * keys.length)];
-    randomObject[randomKey] = guessWhoDB[randomKey]
-  }
+  randomObject = getRandomProperties(query);
 
   res.json(randomObject);
+
+  function getRandomProperties(count){
+    const randomObj = {};
+    const keys = Object.keys(guessWhoDB);
+    const selectedIndex = new Set();
+  
+    while (selectedIndex.size < count){
+      const randomIdx = Math.floor(Math.random() * keys.length);
+      if (selectedIndex.has(randomIdx)){
+        continue;
+      }
+      selectedIndex.add(randomIdx);
+    
+      const randomKey = keys[randomIdx];
+      randomObj[randomKey] = guessWhoDB[randomKey];
+    }
+    return randomObj
+  }
 
 
   function readFileAsync(filePath){
