@@ -12,7 +12,7 @@ const {sequelize} = require('./models');
 
 
 const app = express();
-app.set('port', process.env.PORT || 8001);
+app.set('port', process.env.PORT || 8002);
 app.use(morgan('dev'));
 app.use(express.json());
 
@@ -20,20 +20,21 @@ const filePath = path.join(__dirname, 'tempDB', 'CharDB.json');
 const fileData = fs.readFileSync(filePath);
 const guessWhoDB = JSON.parse(fileData);
 
-
-sequelize.sync({force:false})
-.then(() => {
-  console.log('db 연결 성공!');
-}).catch((err) =>{
-  console.log(err);
-})
+// sequelize.sync({force:false})
+// .then(() => {
+//   console.log('db 연결 성공!');
+// }).catch((err) =>{
+//   console.log(err);
+// })
 
 // 버전, 아이폰, 
 app.use((req, res, next) =>{
   const userAgent = req.header('User-Agent');
   const uuid = req.header('Authorization');
-
+  
   if (userAgent == process.env.BUNDLE && uuid == process.env.UUID){
+    const howMany = req.query.num;
+    res.locals.howMany = howMany;
     next('route');
 
     // const err = new Error('test');
@@ -49,14 +50,11 @@ app.use((req, res, next) =>{
 app.get('/guessWho', (req, res, next) => {
   console.log('guessWhoGET')
   res.status = 200;
-  const randomObject = {};
-  const keys = Object.keys(guessWhoDB);
-  const query = req.query;
-  // log 찍어보고 결정
+  const howMany = res.locals.howMany;
 
-  randomObject = getRandomProperties(query);
-
-  res.json(randomObject);
+  const result = getRandomProperties(howMany);
+  
+  res.send(result);
 
   function getRandomProperties(count){
     const randomObj = {};
@@ -74,23 +72,8 @@ app.get('/guessWho', (req, res, next) => {
       randomObj[randomKey] = guessWhoDB[randomKey];
     }
     return randomObj
-  }
-
-
-  function readFileAsync(filePath){
-    return new Promise((resolve, reject) => {
-      fs.readFile(filePath, (err, data) => {
-        if (err){
-          reject(err);
-        } else {
-          resolve(data);
-        }
-      });
-    });
-  }
-
-
-})
+  } 
+});
 
 app.use((req, res, next) => {
   console.log('에러미들웨어');
