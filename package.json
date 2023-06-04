@@ -6,7 +6,8 @@
   "scripts": {
     "start": "nodemon app",
     "crawl": "node crawling.js",
-    "test": "node testing.js"
+    "test": "node testing.js",
+    "check":"node checking.js"
   },
   "author": "",
   "license": "MIT",
