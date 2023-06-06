@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const characters = require('./Characters');
+const checkFaces = require('./checking.js');
 
 const url = 'https://dapi.kakao.com/v2/search/image?query=';
 const secondQuery = '&sort=accuracy'
@@ -23,12 +24,16 @@ for (const element of characters){
       if (insdie_url.protocol === 'http:'){
         continue;
       } else if (insdie_url.protocol === 'https:'){
+        if (checkFaces(insdie_url)){
+        // if (true){
         const name = element;
-        console.log(name);
-        const {image_url} = urldata[propertyName]
+        const {image_url} = urldata[propertyName];
         console.log(image_url);
         obj[element] = image_url;
         break;
+        } else {
+          continue;
+        }
       }
     }
   })
