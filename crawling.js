@@ -14,6 +14,45 @@ const headers = {
 
 const obj = {}
 
+
+async function makeRequest(){
+  for (const element of characters){
+    const full_url = url + element + secondQuery;
+    await axios.get(full_url, {headers});
+    await delay(6000);
+  }
+}
+
+function delay(ms){
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+makeRequest()
+.then((resp) => {
+  const urlData = resp.data.documents;
+  for (let propertyName in urldata){
+    const inside_url = new URL(urldata[propertyName].image_url);
+    if (inside_url.protocol === 'http'){
+      continue;
+    } else if (inside_url.protocol === 'https'){
+      if (checkFaces(inside_url)){
+        // if (true){
+          const name = element;
+          const {image_url} = urldata[propertyName];
+          console.log(image_url);
+          obj[element] = image_url;
+          break;
+      }else{
+        continue;
+      }
+    }
+  }
+})
+.then((resp) => {
+  
+})
+
 for (const element of characters){
   const full_url = url + element + secondQuery;
   axios.get(full_url, {headers})
@@ -24,8 +63,8 @@ for (const element of characters){
       if (insdie_url.protocol === 'http:'){
         continue;
       } else if (insdie_url.protocol === 'https:'){
-        if (checkFaces(insdie_url)){
-        // if (true){
+        // if (checkFaces(insdie_url)){
+        if (true){
         const name = element;
         const {image_url} = urldata[propertyName];
         console.log(image_url);
@@ -45,4 +84,7 @@ for (const element of characters){
   .catch((err) => {
     console.log(err);
   })
+
+
 }
+
