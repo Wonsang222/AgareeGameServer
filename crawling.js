@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const characters = require('./Characters');
-const checkFaces = require('./checking.js');
+const checkFaces = require('./checking');
+// const checkFaces = require('./checking.js');
 
 const url = 'https://dapi.kakao.com/v2/search/image?query=';
 const secondQuery = '&sort=accuracy'
@@ -14,77 +15,41 @@ const headers = {
 
 const obj = {}
 
-
 async function makeRequest(){
   for (const element of characters){
+    console.log(element);
     const full_url = url + element + secondQuery;
-    await axios.get(full_url, {headers});
-    await delay(6000);
+    const resp = await axios.get(full_url, {headers});
+    const urlData = resp.data.documents;
+  for (let propertyName in urlData){
+    const inside_url = new URL(urlData[propertyName].image_url);
+    if (inside_url.protocol === 'http:'){
+      continue;
+    } else if (inside_url.protocol === 'https:'){
+        const isOne = await checkFaces(inside_url.href);
+        console.log(isOne);
+      if (isOne){
+        // if (true){
+        const name = element;
+          obj[element] = inside_url.href;
+          break;
+      } else{
+        continue;
+      }
+    }
+  }
   }
 }
 
-function delay(ms){
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+
 
 
 makeRequest()
 .then((resp) => {
-  const urlData = resp.data.documents;
-  for (let propertyName in urldata){
-    const inside_url = new URL(urldata[propertyName].image_url);
-    if (inside_url.protocol === 'http'){
-      continue;
-    } else if (inside_url.protocol === 'https'){
-      if (checkFaces(inside_url)){
-        // if (true){
-          const name = element;
-          const {image_url} = urldata[propertyName];
-          console.log(image_url);
-          obj[element] = image_url;
-          break;
-      }else{
-        continue;
-      }
-    }
-  }
+  const savePath = path.join(__dirname, 'tempDB');
+  const saveFileName = path.join(savePath, 'CharDB.json');
+  fs.writeFileSync(saveFileName, JSON.stringify(obj));
 })
-.then((resp) => {
-  
+.catch((err) =>{
+  console.log(err);
 })
-
-for (const element of characters){
-  const full_url = url + element + secondQuery;
-  axios.get(full_url, {headers})
-  .then(resp => {
-    const urldata = resp.data.documents;
-    for (let propertyName in urldata){
-      const insdie_url = new URL(urldata[propertyName].image_url)
-      if (insdie_url.protocol === 'http:'){
-        continue;
-      } else if (insdie_url.protocol === 'https:'){
-        // if (checkFaces(insdie_url)){
-        if (true){
-        const name = element;
-        const {image_url} = urldata[propertyName];
-        console.log(image_url);
-        obj[element] = image_url;
-        break;
-        } else {
-          continue;
-        }
-      }
-    }
-  })
-  .then(() => {
-    const savePath = path.join(__dirname, 'tempDB');
-    const saveFileName = path.join(savePath, 'CharDB.json');
-    fs.writeFileSync(saveFileName, JSON.stringify(obj));
-  })
-  .catch((err) => {
-    console.log(err);
-  })
-
-
-}
-

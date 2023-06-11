@@ -12,13 +12,29 @@ const {sequelize} = require('./models');
 
 
 const app = express();
-app.set('port', process.env.PORT || 8002);
-app.use(morgan('dev'));
+app.set('port', process.env.PORT || 8080);
+app.use(morgan('combined'));
 app.use(express.json());
 
 const filePath = path.join(__dirname, 'tempDB', 'CharDB.json');
 const fileData = fs.readFileSync(filePath);
 const guessWhoDB = JSON.parse(fileData);
+
+const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit({
+  windowMx: 60 * 1000,
+  max:5,
+  handler(req, res){
+    res.status(400).json({
+      code:400,
+      message:'1분에 5번 요청가능',
+    });
+  },
+});
+
+const UUID = '59287382-e52d-4090-a829-864b5b578bc1';
+const BUNDLE = 'com.kr.magic';
 
 // sequelize.sync({force:false})
 // .then(() => {
@@ -27,12 +43,16 @@ const guessWhoDB = JSON.parse(fileData);
 //   console.log(err);
 // })
 
+
+
+app.use(rateLimit);
+
 // 버전, 아이폰, 
 app.use((req, res, next) =>{
   const userAgent = req.header('User-Agent');
   const uuid = req.header('Authorization');
   
-  if (userAgent == process.env.BUNDLE && uuid == process.env.UUID){
+  if (userAgent == BUNDLE && uuid == UUID){
     const howMany = req.query.num;
     res.locals.howMany = howMany;
     next('route');
@@ -90,6 +110,6 @@ app.use((err, req, res, next) => {
   
 });
 
-app.listen(app.get('port'), () => {
+app.listen(app.get('port'), '0.0.0.0', () => {
   console.log(app.get('port'), '번 포트에서 대기중');
 });
