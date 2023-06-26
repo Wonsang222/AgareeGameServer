@@ -8,8 +8,6 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const indexRouter = require('./routes/index');
 const guessWhoRouter = require('./routes/guessWho');
-const {sequelize} = require('./models');
-
 
 const app = express();
 app.set('port', process.env.PORT || 8080);
@@ -20,15 +18,15 @@ const filePath = path.join(__dirname, 'tempDB', 'CharDB.json');
 const fileData = fs.readFileSync(filePath);
 const guessWhoDB = JSON.parse(fileData);
 
-const rateLimit = require('express-rate-limit');
+const rateLimit = require('express-rate-limit'); 
 
 const limiter = rateLimit({
   windowMx: 60 * 1000,
-  max:5,
+  max:10,
   handler(req, res){
     res.status(400).json({
       code:400,
-      message:'1분에 5번 요청가능',
+      message:'1분에 10번 요청가능',
     });
   },
 });
@@ -36,16 +34,9 @@ const limiter = rateLimit({
 const UUID = '59287382-e52d-4090-a829-864b5b578bc1';
 const BUNDLE = 'com.kr.magic';
 
-// sequelize.sync({force:false})
-// .then(() => {
-//   console.log('db 연결 성공!');
-// }).catch((err) =>{
-//   console.log(err);
-// })
+// ------------------------------------------------------------------------------------
 
-
-
-app.use(rateLimit);
+// app.use(rateLimit);
 
 // 버전, 아이폰, 
 app.use((req, res, next) =>{
@@ -56,21 +47,28 @@ app.use((req, res, next) =>{
     const howMany = req.query.num;
     res.locals.howMany = howMany;
     next('route');
-
-    // const err = new Error('test');
-    // err.status = 404;
-    
   } else{
-    const err = new Error('잘못된 접근입니다.');
-    err.status = 404;
-    next(err);
+    const newerr = new Error('비정상 접근');
+    newerr.statuscode = 404;
+    next(newerr);
   }
-})
+});
 
 app.get('/guessWho', (req, res, next) => {
   console.log('guessWhoGET')
-  res.status = 200;
+  res.statuscode = 200;
   const howMany = res.locals.howMany;
+  const number = parseInt(howMany, 10);
+  console.log('----------------------------');
+  console.log(number);
+  console.log('----------------------------');
+  if (number < 1 || number > 5) {
+    const err = new Error('잘못된 접근입니다.');
+    err.statuscode = 404;
+    next(err);
+    return;
+  }
+
 
   const result = getRandomProperties(howMany);
   
@@ -97,17 +95,14 @@ app.get('/guessWho', (req, res, next) => {
 
 app.use((req, res, next) => {
   console.log('에러미들웨어');
-  const error = new Error('라우터가 없습니다.');
+  const error1 = new Error('라우터가 없습니다.');
   error.status = 404;
+  res.locals.error = error1;
   next(error);
 });
 
 app.use((err, req, res, next) => {
-  console.log('마지막에러');
-  res.locals.message = err.message;
-  res.locals.error = process.env.NODE_ENV !== 'production' ? err:{};
-  res.status(err.status || 500);
-  
+  res.status(err.statuscode || 500).json({errMessage:err.message});
 });
 
 app.listen(app.get('port'), '0.0.0.0', () => {
