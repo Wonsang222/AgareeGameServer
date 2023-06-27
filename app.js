@@ -59,16 +59,13 @@ app.get('/guessWho', (req, res, next) => {
   res.statuscode = 200;
   const howMany = res.locals.howMany;
   const number = parseInt(howMany, 10);
-  console.log('----------------------------');
-  console.log(number);
-  console.log('----------------------------');
+
   if (number < 1 || number > 5) {
     const err = new Error('잘못된 접근입니다.');
-    err.statuscode = 404;
+    err.statuscode = 300;
     next(err);
     return;
   }
-
 
   const result = getRandomProperties(howMany);
   
@@ -95,14 +92,13 @@ app.get('/guessWho', (req, res, next) => {
 
 app.use((req, res, next) => {
   console.log('에러미들웨어');
-  const error1 = new Error('라우터가 없습니다.');
-  error.status = 404;
-  res.locals.error = error1;
+  const error = new Error('라우터가 없습니다.');
+  error.statuscode = 404;
   next(error);
 });
 
 app.use((err, req, res, next) => {
-  res.status(err.statuscode || 500).json({errMessage:err.message});
+  res.status(err.statuscode || 500).json({});
 });
 
 app.listen(app.get('port'), '0.0.0.0', () => {
