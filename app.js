@@ -22,7 +22,7 @@ const rateLimit = require('express-rate-limit');
 
 const limiter = rateLimit({
   windowMx: 60 * 1000,
-  max:10,
+  max:5,
   handler(req, res){
     res.status(400).json({
       code:400,

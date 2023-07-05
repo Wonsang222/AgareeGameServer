@@ -7,7 +7,7 @@
     "start": "node app",
     "crawl": "node crawling.js",
     "test": "node testing.js",
-    "check": "node checking.js"
+    "saver": "node saver.js"
   },
   "author": "",
   "license": "MIT",
