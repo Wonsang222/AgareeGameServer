@@ -2,9 +2,11 @@ const fs = require('fs');
 const axios = require('axios');
 const path = require('path');
 
-const filePath = path.join(__dirname, 'tempDB', 'CharDB.json');
-const fileData = fs.readFileSync(filePath);
-const guessWhoDB = JSON.parse(fileData);
+// const filePath = path.join(__dirname, 'tempDB', 'CharDB.json');
+// const fileData = fs.readFileSync(filePath);
+// const guessWhoDB = JSON.parse(fileData);
+
+
 
 
 // async function test(){

@@ -8,17 +8,15 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const indexRouter = require('./routes/index');
 const guessWhoRouter = require('./routes/guessWho');
+const imageFiles = fs.readdirSync('./resources/GuessWho');
 
 const app = express();
 app.set('port', process.env.PORT || 8080);
 app.use(morgan('combined'));
 app.use(express.json());
 
-const filePath = path.join(__dirname, 'tempDB', 'CharDB.json');
-const fileData = fs.readFileSync(filePath);
-const guessWhoDB = JSON.parse(fileData);
-
 const rateLimit = require('express-rate-limit'); 
+const { MIMEType } = require('util');
 
 const limiter = rateLimit({
   windowMx: 60 * 1000,
@@ -40,6 +38,7 @@ const BUNDLE = 'com.kr.magic';
 
 // 버전, 아이폰, 
 app.use((req, res, next) =>{
+  console.log('첫번째');
   const userAgent = req.header('User-Agent');
   const uuid = req.header('Authorization');
   
@@ -73,22 +72,55 @@ app.get('/guessWho', (req, res, next) => {
 
   function getRandomProperties(count){
     const randomObj = {};
-    const keys = Object.keys(guessWhoDB);
     const selectedIndex = new Set();
   
     while (selectedIndex.size < count){
-      const randomIdx = Math.floor(Math.random() * keys.length);
+      const randomIdx = Math.floor(Math.random() * imageFiles.length);
       if (selectedIndex.has(randomIdx)){
         continue;
       }
       selectedIndex.add(randomIdx);
     
-      const randomKey = keys[randomIdx];
-      randomObj[randomKey] = guessWhoDB[randomKey];
+      const name = imageFiles[randomIdx].replace(/\.(png|jpg)$/i, '');
+      randomObj[name] = `http://localhost:8080/guessWho/${encodeURIComponent(imageFiles[randomIdx])}`;
     }
     return randomObj
   } 
 });
+
+app.use('/guessWho/:filename', (req, res) => {
+  console.log('두번째');
+  const fileName = req.params.filename;
+  const userAgent = req.header('User-Agent');
+  const uuid = req.header('Authorization');
+  
+  if (userAgent == BUNDLE && uuid == UUID){
+    let jpgPath = path.join(__dirname, 'resources', 'GuessWho', `${fileName}.jpg`);
+    let pngPath = path.join(__dirname, 'resources', 'GuessWho', `${fileName}.png`);
+
+    fs.access(jpgPath, fs.constants.F_OK, (err) => {
+      if (!err){
+        res.sendFile(jpgPath);
+      } else {
+        fs.access(pngPath, fs.constants.F_OK, (err) => {
+          if (!err){
+            res.sendFile(pngPath);
+          }
+        });
+      }
+    });
+    
+
+    res.statuscode = 200;
+    console.log(imagePath);
+    res.sendFile(imagePath);
+    return;
+  } else{
+    const newerr = new Error('비정상 접근');
+    newerr.statuscode = 404;
+    next(newerr);
+  }
+})
 
 app.use((req, res, next) => {
   console.log('에러미들웨어');
