@@ -105,16 +105,14 @@ app.use('/guessWho/:filename', (req, res) => {
         fs.access(pngPath, fs.constants.F_OK, (err) => {
           if (!err){
             res.sendFile(pngPath);
+          } else {
+            const newErr = new Error('비정상접근');
+            newerr.statuscode = 404;
+            next(newErr);
           }
         });
       }
     });
-    
-
-    res.statuscode = 200;
-    console.log(imagePath);
-    res.sendFile(imagePath);
-    return;
   } else{
     const newerr = new Error('비정상 접근');
     newerr.statuscode = 404;
