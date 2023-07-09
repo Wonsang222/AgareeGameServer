@@ -9,6 +9,8 @@ const cookieParser = require('cookie-parser');
 const indexRouter = require('./routes/index');
 const guessWhoRouter = require('./routes/guessWho');
 const imageFiles = fs.readdirSync('./resources/GuessWho');
+const imageIDXFile = fs.readFileSync('./tempDB/photoIndex.json','utf-8');
+const imageIdx = JSON.parse(imageIDXFile);
 
 const app = express();
 app.set('port', process.env.PORT || 8080);
@@ -59,7 +61,7 @@ app.get('/guessWho', (req, res, next) => {
   const people = parseInt(howMany, 10);
   if (people > 5) {
     const err = new Error('잘못된 접근입니다.');
-    err.statusCode = 300;
+    err.statusCode = 404;
     next(err);
     return;
   }
@@ -70,7 +72,6 @@ app.get('/guessWho', (req, res, next) => {
   function getRandomProperties(count) {
     const randomObj = {};
     const selectedIndex = new Set();
-    let idx = 0;
 
     while (selectedIndex.size < count) {
       const randomIdx = Math.floor(Math.random() * imageFiles.length);
@@ -80,40 +81,20 @@ app.get('/guessWho', (req, res, next) => {
       selectedIndex.add(randomIdx);
 
       const name = imageFiles[randomIdx].replace(/\.(png|jpg)$/i, '');
-      randomObj[idx] = `http://localhost:8080/photos/${encodeURIComponent(name)}`;
-      idx += 1;
+      const target = imageIdx[randomIdx];
+      randomObj[target] = `http://localhost:8080/photos/${encodeURIComponent(name)}`;
     }
     return randomObj;
   }
 });
 
 app.use('/photos/:filename', (req, res) => {
-  const filePath = path.join(__dirname, 'tempDB', 'photoIndex.json');
-  
-  fs.readFile(filePath, (err, data) => {
-    if (err){
-      const newerr = new Error('비정상 접근');
-      newerr.statuscode = 404;
-      next(newerr);
-      return;
-    }
-    try{
+
       const fileName = req.params.filename;
       const idx = parseInt(fileName, 10);
-      console.log(idx);
-      const index = JSON.parse(data);
-      const targetName = encodeURIComponent(index[idx]);
-      
       let jpgPath = path.join(__dirname, 'resources', 'GuessWho', `${fileName}.jpg`);
       res.statusCode = 200;
-      res.setHeader('target-name', targetName);
       res.sendFile(jpgPath);
-    } catch (error){
-      const newerr = new Error('비정상 접근');
-      newerr.statuscode = 404;
-      return next(newerr);
-    }
-  });
 });
 
 app.use((req, res, next) => {
