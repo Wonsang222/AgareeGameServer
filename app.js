@@ -78,18 +78,19 @@ app.get('/guessWho', (req, res, next) => {
       if (selectedIndex.has(randomIdx)) {
         continue;
       }
-      selectedIndex.add(randomIdx);
-
-      const name = imageFiles[randomIdx].replace(/\.(png|jpg)$/i, '');
-      const target = imageIdx[randomIdx];
-      randomObj[target] = `http://localhost:8080/photos/${encodeURIComponent(name)}`;
+      const safeIDX = randomIdx;
+      console.log('안전한 숫자',safeIDX);
+      selectedIndex.add(safeIDX);
+      const target = imageIdx[safeIDX];
+      console.log('target', target);
+      
+      randomObj[target] = `http://localhost:8080/photos/${encodeURIComponent(safeIDX)}`;
     }
     return randomObj;
   }
 });
 
 app.use('/photos/:filename', (req, res) => {
-
       const fileName = req.params.filename;
       const idx = parseInt(fileName, 10);
       let jpgPath = path.join(__dirname, 'resources', 'GuessWho', `${fileName}.jpg`);
