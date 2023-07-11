@@ -79,10 +79,8 @@ app.get('/guessWho', (req, res, next) => {
         continue;
       }
       const safeIDX = randomIdx;
-      console.log('안전한 숫자',safeIDX);
       selectedIndex.add(safeIDX);
       const target = imageIdx[safeIDX];
-      console.log('target', target);
       
       randomObj[target] = `http://localhost:8080/photos/${encodeURIComponent(safeIDX)}`;
     }
