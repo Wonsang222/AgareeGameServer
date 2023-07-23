@@ -5,10 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const morgan = require('morgan');
 // 배포할때는 combined
-const cookieParser = require('cookie-parser');
-const indexRouter = require('./routes/index');
-const guessWhoRouter = require('./routes/guessWho');
-const imageFiles = fs.readdirSync('./resources/GuessWho');
+const imageFiles = fs.readdirSync('./resources/GuessWho_resized');
 const imageIDXFile = fs.readFileSync('./tempDB/photoIndex.json','utf-8');
 const imageIdx = JSON.parse(imageIDXFile);
 
@@ -38,7 +35,7 @@ const BUNDLE = 'com.kr.magic';
 
 // -----------------------------------------------------------------------------
 
-// app.use(rateLimit);
+app.use(rateLimit);
 
 // 버전, 아이폰, 
 
@@ -91,7 +88,7 @@ app.get('/guessWho', (req, res, next) => {
 app.use('/photos/:filename', (req, res) => {
       const fileName = req.params.filename;
       const idx = parseInt(fileName, 10);
-      let jpgPath = path.join(__dirname, 'resources', 'GuessWho', `${fileName}.jpg`);
+      let jpgPath = path.join(__dirname, 'resources', 'GuessWho_resized', `${fileName}.jpg`);
       res.statusCode = 200;
       res.sendFile(jpgPath);
 });
